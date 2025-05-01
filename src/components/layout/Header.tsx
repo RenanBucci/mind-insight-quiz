@@ -4,7 +4,24 @@ import { useAuthStore } from '@/store/authStore';
 
 const Header = () => {
   const { isAuthenticated } = useAuthStore();
-  const navigate = useNavigate();
+  
+  // Check if we're in a Router context
+  let navigate;
+  try {
+    navigate = useNavigate();
+  } catch (error) {
+    // If not in Router context, we'll handle navigation differently
+    console.log("Navigation context not available");
+  }
+
+  const handleNavigation = (path: string) => {
+    if (navigate) {
+      navigate(path);
+    } else {
+      // Fallback for when Router is not available
+      window.location.href = path;
+    }
+  };
 
   return (
     <header className="bg-white shadow-sm">
@@ -20,13 +37,13 @@ const Header = () => {
         {isAuthenticated && (
           <nav className="hidden md:flex space-x-4 text-sm">
             <button 
-              onClick={() => navigate('/quiz')} 
+              onClick={() => handleNavigation('/quiz')} 
               className="text-gray-600 hover:text-primary transition-colors"
             >
               Questionário
             </button>
             <button 
-              onClick={() => navigate('/report')} 
+              onClick={() => handleNavigation('/report')} 
               className="text-gray-600 hover:text-primary transition-colors"
             >
               Relatório
