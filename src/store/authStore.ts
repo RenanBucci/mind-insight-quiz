@@ -6,7 +6,7 @@ export interface User {
   id?: string;
   name: string;
   email: string;
-  sexuality: string;
+  gender: string; // Changed from sexuality to gender
   token?: string;
 }
 
