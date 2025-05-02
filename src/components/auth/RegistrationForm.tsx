@@ -12,7 +12,7 @@ interface RegistrationFormData {
   name: string;
   email: string;
   password: string;
-  sexuality: string;
+  gender: string; // Changed from sexuality to gender
 }
 
 const RegistrationForm = () => {
@@ -36,12 +36,12 @@ const RegistrationForm = () => {
     }
   };
 
-  const sexualityOptions = [
-    "Heterossexual",
-    "Homossexual",
-    "Bissexual",
-    "Pansexual",
-    "Assexual",
+  const genderOptions = [
+    "Feminino",
+    "Masculino",
+    "Não-binário",
+    "Gênero fluido",
+    "Agênero",
     "Outro",
     "Prefiro não informar"
   ];
@@ -122,23 +122,23 @@ const RegistrationForm = () => {
         </div>
 
         <div>
-          <label htmlFor="sexuality" className="block text-sm font-medium text-text-primary mb-1">
-            Sexualidade
+          <label htmlFor="gender" className="block text-sm font-medium text-text-primary mb-1">
+            Gênero
           </label>
           <select
-            id="sexuality"
-            {...registerField('sexuality', { required: "Selecione uma opção" })}
-            className={`w-full p-2 border rounded-md ${errors.sexuality ? "border-error" : "border-input"}`}
+            id="gender"
+            {...registerField('gender', { required: "Selecione uma opção" })}
+            className={`w-full p-2 border rounded-md ${errors.gender ? "border-error" : "border-input"}`}
           >
             <option value="">Selecione uma opção</option>
-            {sexualityOptions.map((option) => (
+            {genderOptions.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
             ))}
           </select>
-          {errors.sexuality ? (
-            <p className="text-error text-sm mt-1">{errors.sexuality.message}</p>
+          {errors.gender ? (
+            <p className="text-error text-sm mt-1">{errors.gender.message}</p>
           ) : (
             <p className="text-xs text-text-secondary mt-1">
               Esta informação é protegida e usada apenas para fins de pesquisa.
