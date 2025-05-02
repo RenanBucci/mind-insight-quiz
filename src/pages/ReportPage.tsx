@@ -59,7 +59,7 @@ const ReportPage = () => {
         Analise as respostas deste questionário psicológico e forneça insights sobre a personalidade do respondente.
         Nome: ${user?.name || 'Não informado'}
         Email: ${user?.email || 'Não informado'}
-        Sexualidade: ${user?.sexuality || 'Não informada'}
+        Gênero: ${user?.gender || 'Não informado'}
         
         RESPOSTAS:
         ${questionAnswers}
