@@ -2,13 +2,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import QuizQuestion from '@/components/quiz/QuizQuestion';
+import QuestionCard from '@/components/quiz/QuestionCard';
 import QuizProgress from '@/components/quiz/QuizProgress';
 import { useQuizStore } from '@/store/quizStore';
 import { useAuthStore } from '@/store/authStore';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 const QuizPage = () => {
   const navigate = useNavigate();
@@ -22,9 +20,6 @@ const QuizPage = () => {
   
   const isFirstQuestion = currentQuestionIndex === 0;
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
-
-  // Determine if we should show the timer based on the question type
-  const showTimer = currentQuestion && currentQuestion.type === 'choice';
   
   useEffect(() => {
     if (!isAuthenticated) {
@@ -35,21 +30,23 @@ const QuizPage = () => {
     }
   }, [isAuthenticated, navigate]);
   
-  const handleAnswer = (questionId: number, answer: string) => {
-    setAnswer(questionId, answer);
+  const handleAnswer = (answer: string) => {
+    setAnswer(currentQuestion.id, answer);
   };
   
   const handlePrevQuestion = () => {
     if (!isFirstQuestion) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     } else {
-      navigate('/anamnese-intro');
+      navigate('/anamnese-phases');
     }
   };
   
   const handleNextQuestion = () => {
     if (!isLastQuestion) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      handleSubmitQuiz();
     }
   };
   
@@ -99,104 +96,59 @@ const QuizPage = () => {
     }
   };
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !currentQuestion) {
     return null;
   }
+
+  const sectionTitle = currentQuestion.section?.split(':')[1]?.trim() || "ANAMNESE PSICOLÓGICA";
 
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          {currentQuestionIndex === 0 && (
-            <>
-              <h1 className="text-2xl md:text-3xl font-bold mb-4 text-center">
-                ANAMNESE PSICOLÓGICA - FASE 1
-              </h1>
-              <h2 className="text-xl font-semibold mb-6 text-center">
-                IDENTIFICAÇÃO E QUEIXAS PRINCIPAIS
-              </h2>
-              
-              <div className="bg-gray-50 p-6 mb-8 rounded-lg border border-gray-100">
-                <h3 className="text-lg font-medium mb-4">INSTRUÇÕES AO PACIENTE</h3>
-                
-                <p className="mb-4">Prezado(a) paciente,</p>
-                
-                <p className="mb-4">
-                  Esta é a primeira fase do nosso questionário de anamnese psicológica. 
-                  Nesta etapa, buscamos compreender seus dados básicos, motivos que o(a) 
-                  trouxeram ao atendimento, e principais queixas atuais.
-                </p>
-                
-                <p className="mb-4">
-                  Por favor, responda a todas as questões com sinceridade, marcando a alternativa 
-                  que melhor representa sua experiência:
-                </p>
-                
-                <ul className="list-none space-y-1 mb-4">
-                  <li><strong>A</strong> = Nunca/Discordo totalmente</li>
-                  <li><strong>B</strong> = Raramente/Discordo parcialmente</li>
-                  <li><strong>C</strong> = Às vezes/Nem concordo nem discordo</li>
-                  <li><strong>D</strong> = Frequentemente/Concordo parcialmente</li>
-                  <li><strong>E</strong> = Sempre/Concordo totalmente</li>
-                </ul>
-                
-                <p>Suas respostas são confidenciais e serão utilizadas apenas para fins terapêuticos.</p>
-              </div>
-            </>
-          )}
-          
-          <QuizProgress answered={answeredCount} total={questions.length} />
-          
-          <div className="min-h-[400px]">
-            <QuizQuestion
-              key={currentQuestion.id}
-              question={currentQuestion}
-              onAnswer={handleAnswer}
-              showTimer={currentQuestion.type === 'choice'}
-            />
-          </div>
-          
-          <div className="flex justify-between mt-8">
-            <Button
-              onClick={handlePrevQuestion}
-              variant="outline"
-              size="lg"
-              className="px-6"
-            >
-              <ChevronLeft className="mr-2" /> Anterior
-            </Button>
+        {currentQuestionIndex === 0 && (
+          <div className="max-w-3xl mx-auto mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold mb-4 text-center">
+              ANAMNESE PSICOLÓGICA - FASE 1
+            </h1>
             
-            {isLastQuestion ? (
-              <Button
-                onClick={handleSubmitQuiz}
-                size="lg"
-                className="px-8"
-              >
-                Finalizar Questionário
-              </Button>
-            ) : (
-              <Button
-                onClick={handleNextQuestion}
-                disabled={!currentQuestion.answer && currentQuestion.answer !== ""}
-                size="lg"
-                className="px-8"
-              >
-                Próxima <ChevronRight className="ml-2" />
-              </Button>
-            )}
+            <div className="bg-gray-50 p-6 mb-8 rounded-lg border border-gray-100">
+              <h3 className="text-lg font-medium mb-4">INSTRUÇÕES AO PACIENTE</h3>
+              
+              <p className="mb-4">Prezado(a) paciente,</p>
+              
+              <p className="mb-4">
+                Esta é a primeira fase do nosso questionário de anamnese psicológica. 
+                Nesta etapa, buscamos compreender seus dados básicos, motivos que o(a) 
+                trouxeram ao atendimento, e principais queixas atuais.
+              </p>
+              
+              <p className="mb-4">
+                Por favor, responda a todas as questões com sinceridade, marcando a alternativa 
+                que melhor representa sua experiência.
+              </p>
+              
+              <p>Suas respostas são confidenciais e serão utilizadas apenas para fins terapêuticos.</p>
+            </div>
           </div>
-          
-          <div className="text-center text-sm text-text-secondary mt-4">
-            Pergunta {currentQuestionIndex + 1} de {questions.length}
-          </div>
-          
-          {!currentQuestion.answer && currentQuestion.answer !== "" && (
-            <p className="text-center text-sm text-text-secondary mt-2">
-              {currentQuestion.type === 'choice' 
-                ? "Selecione uma resposta para continuar" 
-                : "Digite uma resposta para continuar"}
-            </p>
-          )}
+        )}
+        
+        <QuizProgress answered={answeredCount} total={questions.length} />
+        
+        <QuestionCard
+          questionId={currentQuestionIndex + 1}
+          questionText={currentQuestion.text}
+          sectionTitle={sectionTitle}
+          options={currentQuestion.options}
+          answer={currentQuestion.answer}
+          onAnswer={handleAnswer}
+          onNext={handleNextQuestion}
+          onPrev={handlePrevQuestion}
+          isFirstQuestion={isFirstQuestion}
+          isLastQuestion={isLastQuestion}
+        />
+        
+        <div className="text-center text-sm text-text-secondary mt-4">
+          Pergunta {currentQuestionIndex + 1} de {questions.length}
         </div>
       </div>
     </Layout>

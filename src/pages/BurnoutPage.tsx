@@ -2,21 +2,22 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
+import QuestionCard from '@/components/quiz/QuestionCard';
+import QuizProgress from '@/components/quiz/QuizProgress';
 import { useAuthStore } from '@/store/authStore';
 import { useBurnoutStore } from '@/store/burnoutStore';
-import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
-import QuizProgress from '@/components/quiz/QuizProgress';
-import { Card, CardContent } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 
 const BurnoutPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
-  const { questions, setAnswer, setSubAnswer, getAnsweredCount, markBurnoutCompleted, isBurnoutCompleted } = useBurnoutStore();
+  const { 
+    questions, 
+    setAnswer, 
+    setSubAnswer, 
+    getAnsweredCount, 
+    markBurnoutCompleted
+  } = useBurnoutStore();
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const currentQuestion = questions[currentQuestionIndex];
@@ -34,33 +35,27 @@ const BurnoutPage = () => {
     }
   }, [isAuthenticated, navigate]);
   
-  const handleAnswer = (questionId: number, answer: string) => {
-    setAnswer(questionId, answer);
-    
-    // For questions C, D, or E that have sub-questions
-    if (['C', 'D', 'E'].includes(answer) && currentQuestion.subQuestion) {
-      // Don't automatically advance to the next question, let the user answer the sub-question
-    } else if (!isLastQuestion) {
-      // Automatically advance to the next question after a short delay
-      setTimeout(() => {
-        handleNextQuestion();
-      }, 500);
-    }
+  const handleAnswer = (answer: string) => {
+    setAnswer(currentQuestion.id, answer);
   };
   
-  const handleSubAnswer = (questionId: number, answer: string) => {
-    setSubAnswer(questionId, answer);
+  const handleSubAnswer = (answer: string) => {
+    setSubAnswer(currentQuestion.id, answer);
   };
   
   const handlePrevQuestion = () => {
     if (!isFirstQuestion) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
+    } else {
+      navigate('/burnout-intro');
     }
   };
   
   const handleNextQuestion = () => {
     if (!isLastQuestion) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      handleSubmitBurnout();
     }
   };
   
@@ -110,120 +105,49 @@ const BurnoutPage = () => {
     }
   };
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !currentQuestion) {
     return null;
   }
 
-  const renderSubQuestion = () => {
-    if (!currentQuestion.subQuestion || !['C', 'D', 'E'].includes(currentQuestion.answer || '')) {
-      return null;
-    }
-
-    return (
-      <div className="mt-6 pt-4 border-t border-gray-200">
-        <p className="italic text-gray-600 mb-3">{currentQuestion.subQuestion.text}</p>
-        <Input
-          type="text"
-          value={currentQuestion.subQuestion.answer || ""}
-          onChange={(e) => handleSubAnswer(currentQuestion.id, e.target.value)}
-          placeholder="Digite sua resposta aqui..."
-          className="w-full"
-        />
-      </div>
-    );
-  };
+  // Extract the section title after the colon
+  const sectionTitle = currentQuestion.section?.split(':')[1]?.trim() || "BURNOUT PROFISSIONAL";
+  
+  // Determine if we should show sub question
+  const showSubQuestion = Boolean(
+    currentQuestion.subQuestion && 
+    ['C', 'D', 'E'].includes(currentQuestion.answer || '')
+  );
 
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          {currentQuestionIndex === 0 && (
-            <h1 className="text-2xl md:text-3xl font-bold mb-4 text-center">
-              TESTE DE BURNOUT PROFISSIONAL
-            </h1>
-          )}
-          
-          <QuizProgress answered={answeredCount} total={questions.length} />
-          
-          <Card className="mb-6">
-            <CardContent className="pt-6">
-              {currentQuestion.section && (
-                <p className="text-sm text-gray-500 mb-2">{currentQuestion.section}</p>
-              )}
-              
-              <h3 className="text-lg font-medium mb-6">
-                {currentQuestion.id}. {currentQuestion.text}
-              </h3>
-              
-              <RadioGroup
-                value={currentQuestion.answer || ""}
-                onValueChange={(value) => handleAnswer(currentQuestion.id, value)}
-                className="space-y-3"
-              >
-                {currentQuestion.options?.map((option, index) => {
-                  let optionLabel = "";
-                  switch (option) {
-                    case "A": optionLabel = "Nunca"; break;
-                    case "B": optionLabel = "Raramente"; break;
-                    case "C": optionLabel = "Às vezes"; break;
-                    case "D": optionLabel = "Frequentemente"; break;
-                    case "E": optionLabel = "Sempre"; break;
-                    default: optionLabel = option;
-                  }
-                  
-                  return (
-                    <div key={index} className="flex items-center space-x-2 p-2 rounded-md border border-transparent hover:border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">
-                      <RadioGroupItem
-                        id={`q${currentQuestion.id}-option${index}`}
-                        value={option}
-                      />
-                      <Label htmlFor={`q${currentQuestion.id}-option${index}`} className="text-base cursor-pointer w-full">
-                        {option} - {optionLabel}
-                      </Label>
-                    </div>
-                  );
-                })}
-              </RadioGroup>
-              
-              {renderSubQuestion()}
-            </CardContent>
-          </Card>
-          
-          <div className="flex justify-between mt-8">
-            <Button
-              onClick={handlePrevQuestion}
-              disabled={isFirstQuestion}
-              variant="outline"
-              size="lg"
-              className="px-6"
-            >
-              <ChevronLeft className="mr-2" /> Anterior
-            </Button>
-            
-            {isLastQuestion ? (
-              <Button
-                onClick={handleSubmitBurnout}
-                size="lg"
-                className="px-8"
-                disabled={!currentQuestion.answer}
-              >
-                Finalizar Questionário
-              </Button>
-            ) : (
-              <Button
-                onClick={handleNextQuestion}
-                disabled={!currentQuestion.answer}
-                size="lg"
-                className="px-8"
-              >
-                Próxima <ChevronRight className="ml-2" />
-              </Button>
-            )}
-          </div>
-          
-          <div className="text-center text-sm text-text-secondary mt-4">
-            Pergunta {currentQuestionIndex + 1} de {questions.length}
-          </div>
+        {currentQuestionIndex === 0 && (
+          <h1 className="text-2xl md:text-3xl font-bold mb-8 text-center">
+            TESTE DE BURNOUT PROFISSIONAL
+          </h1>
+        )}
+        
+        <QuizProgress answered={answeredCount} total={questions.length} />
+        
+        <QuestionCard
+          questionId={currentQuestion.id}
+          questionText={currentQuestion.text}
+          sectionTitle={sectionTitle}
+          options={currentQuestion.options}
+          answer={currentQuestion.answer}
+          onAnswer={handleAnswer}
+          onNext={handleNextQuestion}
+          onPrev={handlePrevQuestion}
+          isFirstQuestion={isFirstQuestion}
+          isLastQuestion={isLastQuestion}
+          showSubQuestion={showSubQuestion}
+          subQuestionText={currentQuestion.subQuestion?.text}
+          subAnswer={currentQuestion.subQuestion?.answer}
+          onSubAnswer={handleSubAnswer}
+        />
+        
+        <div className="text-center text-sm text-text-secondary mt-4">
+          Pergunta {currentQuestionIndex + 1} de {questions.length}
         </div>
       </div>
     </Layout>
