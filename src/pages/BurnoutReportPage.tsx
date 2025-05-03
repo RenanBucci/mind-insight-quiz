@@ -2,21 +2,19 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import { useQuizStore } from '@/store/quizStore';
 import { useAuthStore } from '@/store/authStore';
+import { useBurnoutStore } from '@/store/burnoutStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Input } from '@/components/ui/input';
 
-const ReportPage = () => {
+const BurnoutReportPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
-  const { questions, isQuizCompleted, resetQuiz } = useQuizStore();
+  const { questions, isBurnoutCompleted, resetBurnout } = useBurnoutStore();
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
   const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
-  const [webhookUrl, setWebhookUrl] = useState(localStorage.getItem('n8nWebhook') || '');
-  const [perplexityApiKey, setPerplexityApiKey] = useState(localStorage.getItem('perplexityApiKey') || '');
+  const perplexityApiKey = localStorage.getItem('perplexityApiKey') || '';
   
   useEffect(() => {
     if (!isAuthenticated) {
@@ -27,22 +25,13 @@ const ReportPage = () => {
       return;
     }
     
-    if (!isQuizCompleted()) {
-      toast.error("Você precisa completar o questionário primeiro", {
+    if (!isBurnoutCompleted()) {
+      toast.error("Você precisa completar o questionário de burnout primeiro", {
         duration: 3000,
       });
-      navigate('/anamnese-intro');
+      navigate('/burnout-intro');
     }
-  }, [isAuthenticated, isQuizCompleted, navigate]);
-
-  useEffect(() => {
-    if (webhookUrl) {
-      localStorage.setItem('n8nWebhook', webhookUrl);
-    }
-    if (perplexityApiKey) {
-      localStorage.setItem('perplexityApiKey', perplexityApiKey);
-    }
-  }, [webhookUrl, perplexityApiKey]);
+  }, [isAuthenticated, isBurnoutCompleted, navigate]);
 
   const generateAiAnalysis = async () => {
     if (!perplexityApiKey) {
@@ -53,10 +42,28 @@ const ReportPage = () => {
     setIsAnalysisLoading(true);
     try {
       // Prepare data for analysis
-      const questionAnswers = questions.map(q => `Pergunta: ${q.text}\nResposta: ${q.answer}`).join('\n\n');
+      const questionAnswers = questions.map(q => {
+        let answer = '';
+        switch (q.answer) {
+          case 'A': answer = 'Nunca'; break;
+          case 'B': answer = 'Raramente'; break;
+          case 'C': answer = 'Às vezes'; break;
+          case 'D': answer = 'Frequentemente'; break;
+          case 'E': answer = 'Sempre'; break;
+          default: answer = q.answer || 'Não respondido';
+        }
+        
+        let result = `Pergunta: ${q.text}\nResposta: ${answer}`;
+        
+        if (q.subQuestion && q.subQuestion.answer && ['C', 'D', 'E'].includes(q.answer || '')) {
+          result += `\nSub-pergunta: ${q.subQuestion.text}\nResposta: ${q.subQuestion.answer}`;
+        }
+        
+        return result;
+      }).join('\n\n');
       
       const prompt = `
-        Analise as respostas deste questionário psicológico e forneça insights sobre a personalidade do respondente.
+        Analise as respostas deste questionário de burnout profissional e forneça insights sobre o nível de esgotamento profissional do respondente.
         Nome: ${user?.name || 'Não informado'}
         Email: ${user?.email || 'Não informado'}
         Gênero: ${user?.gender || 'Não informado'}
@@ -64,7 +71,14 @@ const ReportPage = () => {
         RESPOSTAS:
         ${questionAnswers}
         
-        Por favor, forneça uma análise concisa e respeitosa (em português) sobre o perfil psicológico desta pessoa com base nas respostas.
+        Por favor, forneça uma análise concisa e respeitosa (em português) sobre o nível de burnout desta pessoa com base nas respostas.
+        Indique o nível geral de burnout (baixo, moderado, alto ou severo) e considere os seguintes aspectos:
+        1. Exaustão emocional
+        2. Despersonalização/cinismo
+        3. Realização profissional
+        4. Sintomas físicos
+        5. Estratégias de enfrentamento
+        6. Recomendações específicas para a pessoa
       `;
 
       const response = await fetch('https://api.perplexity.ai/chat/completions', {
@@ -78,7 +92,7 @@ const ReportPage = () => {
           messages: [
             {
               role: 'system',
-              content: 'Você é um psicólogo especializado em análise de perfis psicológicos. Forneça análises respeitosas, éticas e úteis com base nas respostas do questionário.'
+              content: 'Você é um psicólogo especializado em saúde ocupacional e burnout profissional. Forneça análises respeitosas, éticas e úteis com base nas respostas do questionário.'
             },
             {
               role: 'user',
@@ -105,16 +119,16 @@ const ReportPage = () => {
     }
   };
   
-  const handleRefreshQuiz = () => {
-    resetQuiz();
-    navigate('/quiz');
+  const handleRefreshBurnout = () => {
+    resetBurnout();
+    navigate('/burnout');
   };
 
   const handleBackToTests = () => {
     navigate('/tests');
   };
 
-  if (!isAuthenticated || !isQuizCompleted()) {
+  if (!isAuthenticated || !isBurnoutCompleted()) {
     return null;
   }
 
@@ -125,7 +139,7 @@ const ReportPage = () => {
           <Card className="mb-8">
             <CardHeader>
               <CardTitle className="text-2xl md:text-3xl text-center">
-                Seu Relatório de Anamnese Psicológica
+                Seu Relatório de Burnout Profissional
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -137,8 +151,20 @@ const ReportPage = () => {
                     </h3>
                     <p>
                       <span className="font-semibold">Sua Resposta:</span> {" "}
-                      <span className="text-primary">{question.answer}</span>
+                      <span className="text-primary">
+                        {question.answer === 'A' ? 'A - Nunca' : 
+                         question.answer === 'B' ? 'B - Raramente' :
+                         question.answer === 'C' ? 'C - Às vezes' :
+                         question.answer === 'D' ? 'D - Frequentemente' :
+                         question.answer === 'E' ? 'E - Sempre' : question.answer}
+                      </span>
                     </p>
+                    {question.subQuestion && question.subQuestion.answer && ['C', 'D', 'E'].includes(question.answer || '') && (
+                      <p className="mt-2 ml-4 text-sm">
+                        <span className="font-semibold italic">{question.subQuestion.text}</span> {" "}
+                        <span className="text-primary">{question.subQuestion.answer}</span>
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -149,7 +175,7 @@ const ReportPage = () => {
             <Card className="mb-8">
               <CardHeader>
                 <CardTitle className="text-xl text-center">
-                  Análise Psicológica
+                  Análise de Burnout Profissional
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -160,52 +186,20 @@ const ReportPage = () => {
             </Card>
           )}
           
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="text-xl">
-                Configurações
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">URL do Webhook n8n</label>
-                  <Input
-                    placeholder="https://seu-webhook-n8n.com/..."
-                    value={webhookUrl}
-                    onChange={(e) => setWebhookUrl(e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1">Chave API do Perplexity</label>
-                  <Input
-                    type="password"
-                    placeholder="pplx-xxxxxxx..."
-                    value={perplexityApiKey}
-                    onChange={(e) => setPerplexityApiKey(e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
           <div className="flex flex-wrap justify-center gap-4 mt-8">
             <Button onClick={handleBackToTests} variant="outline">
               Voltar para Testes
             </Button>
             
-            <Button onClick={handleRefreshQuiz} variant="outline">
-              Refazer Anamnese
+            <Button onClick={handleRefreshBurnout} variant="outline">
+              Refazer Questionário de Burnout
             </Button>
             
             <Button 
               onClick={generateAiAnalysis} 
               disabled={isAnalysisLoading || !perplexityApiKey}
             >
-              {isAnalysisLoading ? "Gerando Análise..." : "Gerar Análise Psicológica"}
+              {isAnalysisLoading ? "Gerando Análise..." : "Gerar Análise de Burnout"}
             </Button>
           </div>
         </div>
@@ -214,4 +208,4 @@ const ReportPage = () => {
   );
 };
 
-export default ReportPage;
+export default BurnoutReportPage;

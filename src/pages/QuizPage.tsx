@@ -42,6 +42,8 @@ const QuizPage = () => {
   const handlePrevQuestion = () => {
     if (!isFirstQuestion) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
+    } else {
+      navigate('/anamnese-intro');
     }
   };
   
@@ -66,6 +68,7 @@ const QuizPage = () => {
       // Send quiz data to webhook
       const quizData = {
         user: user,
+        testType: "anamnese",
         questions: questions,
         completedAt: new Date().toISOString()
       };
@@ -107,10 +110,10 @@ const QuizPage = () => {
           {currentQuestionIndex === 0 && (
             <>
               <h1 className="text-2xl md:text-3xl font-bold mb-4 text-center">
-                FASE 1: IDENTIFICAÇÃO E QUEIXAS PRINCIPAIS
+                ANAMNESE PSICOLÓGICA - FASE 1
               </h1>
               <h2 className="text-xl font-semibold mb-6 text-center">
-                QUESTIONÁRIO DE ANAMNESE PSICOLÓGICA (FORMATO MÚLTIPLA ESCOLHA)
+                IDENTIFICAÇÃO E QUEIXAS PRINCIPAIS
               </h2>
               
               <div className="bg-gray-50 p-6 mb-8 rounded-lg border border-gray-100">
@@ -119,7 +122,7 @@ const QuizPage = () => {
                 <p className="mb-4">Prezado(a) paciente,</p>
                 
                 <p className="mb-4">
-                  Esta é a primeira fase do nosso questionário de avaliação psicológica. 
+                  Esta é a primeira fase do nosso questionário de anamnese psicológica. 
                   Nesta etapa, buscamos compreender seus dados básicos, motivos que o(a) 
                   trouxeram ao atendimento, e principais queixas atuais.
                 </p>
@@ -156,7 +159,6 @@ const QuizPage = () => {
           <div className="flex justify-between mt-8">
             <Button
               onClick={handlePrevQuestion}
-              disabled={isFirstQuestion}
               variant="outline"
               size="lg"
               className="px-6"
