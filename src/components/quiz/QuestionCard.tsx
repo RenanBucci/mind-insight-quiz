@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -22,6 +23,7 @@ interface QuestionCardProps {
   onSubAnswer?: (answer: string) => void;
   isLastQuestion?: boolean;
   isFirstQuestion?: boolean;
+  questionType?: string;
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
@@ -39,6 +41,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   onSubAnswer = () => {},
   isLastQuestion = false,
   isFirstQuestion = false,
+  questionType = 'choice',
 }) => {
   // Map options to their full descriptions
   const optionLabels = {
@@ -61,24 +64,43 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           <div className="flex-1">
             <p className="text-xl mb-6">{questionText}</p>
             
-            <RadioGroup 
-              value={answer || ""}
-              onValueChange={onAnswer}
-              className="space-y-3"
-            >
-              {options.map((option) => (
-                <div key={option} className="flex items-center gap-2">
-                  <RadioGroupItem value={option} id={`option-${option}`} />
-                  <Label htmlFor={`option-${option}`} className="cursor-pointer text-lg">
-                    ( ) {option === 'A' ? 'Nunca/Discordo totalmente' : 
-                        option === 'B' ? 'Raramente/Discordo parcialmente' :
-                        option === 'C' ? 'Às vezes/Nem concordo nem discordo' :
-                        option === 'D' ? 'Frequentemente/Concordo parcialmente' :
-                        'Sempre/Concordo totalmente'}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
+            {questionType === 'choice' ? (
+              <RadioGroup 
+                value={answer || ""}
+                onValueChange={onAnswer}
+                className="space-y-3"
+              >
+                {options.map((option) => (
+                  <div key={option} className="flex items-center gap-2">
+                    <RadioGroupItem value={option} id={`option-${option}`} />
+                    <Label htmlFor={`option-${option}`} className="cursor-pointer text-lg">
+                      ( ) {option === 'A' ? 'Nunca/Discordo totalmente' : 
+                          option === 'B' ? 'Raramente/Discordo parcialmente' :
+                          option === 'C' ? 'Às vezes/Nem concordo nem discordo' :
+                          option === 'D' ? 'Frequentemente/Concordo parcialmente' :
+                          'Sempre/Concordo totalmente'}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            ) : (
+              questionText.length > 50 ? (
+                <Textarea
+                  value={answer || ""}
+                  onChange={(e) => onAnswer(e.target.value)}
+                  placeholder="Digite sua resposta aqui..."
+                  className="w-full min-h-[120px]"
+                />
+              ) : (
+                <Input
+                  type="text"
+                  value={answer || ""}
+                  onChange={(e) => onAnswer(e.target.value)}
+                  placeholder="Digite sua resposta aqui..."
+                  className="w-full"
+                />
+              )
+            )}
             
             {showSubQuestion && (
               <div className="mt-6 pt-4 border-t border-gray-200">
@@ -102,7 +124,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           variant="secondary" 
           size="lg"
           className="px-8 py-6 text-lg"
-          disabled={isFirstQuestion}
         >
           <ChevronLeft className="mr-2" /> Anterior
         </Button>

@@ -20,6 +20,7 @@ const QuizPage = () => {
   
   const isFirstQuestion = currentQuestionIndex === 0;
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
+  const showInstructions = currentQuestionIndex === 0;
   
   useEffect(() => {
     if (!isAuthenticated) {
@@ -105,7 +106,7 @@ const QuizPage = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
-        {currentQuestionIndex === 0 && (
+        {showInstructions && (
           <div className="max-w-3xl mx-auto mb-8">
             <h1 className="text-2xl md:text-3xl font-bold mb-4 text-center">
               ANAMNESE PSICOLÓGICA - FASE 1
@@ -145,6 +146,7 @@ const QuizPage = () => {
           onPrev={handlePrevQuestion}
           isFirstQuestion={isFirstQuestion}
           isLastQuestion={isLastQuestion}
+          questionType={currentQuestion.type}
         />
         
         <div className="text-center text-sm text-text-secondary mt-4">
