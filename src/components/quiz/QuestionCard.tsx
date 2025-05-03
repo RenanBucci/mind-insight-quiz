@@ -24,6 +24,8 @@ interface QuestionCardProps {
   isLastQuestion?: boolean;
   isFirstQuestion?: boolean;
   questionType?: string;
+  currentQuestionNumber?: number;
+  totalQuestions?: number;
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
@@ -42,6 +44,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   isLastQuestion = false,
   isFirstQuestion = false,
   questionType = 'choice',
+  currentQuestionNumber = 1,
+  totalQuestions = 1,
 }) => {
   // Map options to their full descriptions
   const optionLabels = {
@@ -54,7 +58,17 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
   return (
     <div className="w-full max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold text-center mb-6">{sectionTitle}</h1>
+      <div className="mb-4 text-center">
+        <h1 className="text-2xl font-bold text-center mb-2">{sectionTitle}</h1>
+        <p className="text-sm text-gray-500">Questão {currentQuestionNumber} de {totalQuestions}</p>
+        
+        <div className="w-full bg-gray-200 h-2 rounded-full mt-4">
+          <div 
+            className="bg-blue-500 h-2 rounded-full" 
+            style={{ width: `${(currentQuestionNumber / totalQuestions) * 100}%` }}
+          />
+        </div>
+      </div>
       
       <Card className="p-8 mb-8 shadow-md">
         <div className="flex items-start gap-6">
@@ -74,11 +88,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                   <div key={option} className="flex items-center gap-2">
                     <RadioGroupItem value={option} id={`option-${option}`} />
                     <Label htmlFor={`option-${option}`} className="cursor-pointer text-lg">
-                      ( ) {option === 'A' ? 'Nunca/Discordo totalmente' : 
-                          option === 'B' ? 'Raramente/Discordo parcialmente' :
-                          option === 'C' ? 'Às vezes/Nem concordo nem discordo' :
-                          option === 'D' ? 'Frequentemente/Concordo parcialmente' :
-                          'Sempre/Concordo totalmente'}
+                      {option} - {optionLabels[option as keyof typeof optionLabels] || option}
                     </Label>
                   </div>
                 ))}
@@ -124,6 +134,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           variant="secondary" 
           size="lg"
           className="px-8 py-6 text-lg"
+          disabled={isFirstQuestion}
         >
           <ChevronLeft className="mr-2" /> Anterior
         </Button>

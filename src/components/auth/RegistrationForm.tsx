@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -6,13 +5,12 @@ import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
 
 interface RegistrationFormData {
   name: string;
   email: string;
   password: string;
-  gender: string; // Changed from sexuality to gender
+  gender: string;
 }
 
 const RegistrationForm = () => {
@@ -30,7 +28,7 @@ const RegistrationForm = () => {
     try {
       const { password, ...userData } = data;
       await register(userData, password);
-      navigate('/quiz');
+      navigate('/tests');
     } catch (error) {
       console.error('Registration failed:', error);
     }

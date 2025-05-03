@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { ChevronRight } from 'lucide-react';
 
 const BurnoutIntroPage = () => {
@@ -25,16 +25,13 @@ const BurnoutIntroPage = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl md:text-3xl text-center">
-                TESTE DE BURNOUT PROFISSIONAL
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+        <div className="max-w-3xl mx-auto">
+          <Card className="p-6 shadow-md mb-8">
+            <h1 className="text-3xl font-bold text-center mb-8">TESTE DE BURNOUT PROFISSIONAL</h1>
+            
+            <div className="space-y-6">
               <div className="bg-gray-50 p-6 rounded-lg border border-gray-100">
-                <h3 className="text-lg font-medium mb-4">INTRODUÇÃO</h3>
+                <h2 className="text-xl font-semibold mb-4">INTRODUÇÃO</h2>
                 
                 <p className="mb-4">Prezado(a) Colaborador(a),</p>
                 
@@ -57,7 +54,7 @@ const BurnoutIntroPage = () => {
               </div>
 
               <div className="bg-gray-50 p-6 rounded-lg border border-gray-100">
-                <h3 className="text-lg font-medium mb-4">O QUE É BURNOUT?</h3>
+                <h2 className="text-xl font-semibold mb-4">O QUE É BURNOUT?</h2>
                 
                 <p className="mb-4">
                   Burnout é uma síndrome resultante do estresse crônico no local de trabalho que não foi gerenciado com sucesso. 
@@ -77,7 +74,7 @@ const BurnoutIntroPage = () => {
               </div>
 
               <div className="bg-gray-50 p-6 rounded-lg border border-gray-100">
-                <h3 className="text-lg font-medium mb-4">INSTRUÇÕES</h3>
+                <h2 className="text-xl font-semibold mb-4">INSTRUÇÕES</h2>
                 
                 <p className="mb-4">
                   O questionário está dividido em 7 partes que abordam diferentes aspectos da sua experiência profissional:
@@ -98,24 +95,24 @@ const BurnoutIntroPage = () => {
                 </p>
                 
                 <ul className="list-none space-y-1 mb-4">
-                  <li><strong>A</strong> = Nunca</li>
-                  <li><strong>B</strong> = Raramente</li>
-                  <li><strong>C</strong> = Às vezes</li>
-                  <li><strong>D</strong> = Frequentemente</li>
-                  <li><strong>E</strong> = Sempre</li>
+                  <li><strong>A</strong> = Nunca/Discordo totalmente</li>
+                  <li><strong>B</strong> = Raramente/Discordo parcialmente</li>
+                  <li><strong>C</strong> = Às vezes/Nem concordo nem discordo</li>
+                  <li><strong>D</strong> = Frequentemente/Concordo parcialmente</li>
+                  <li><strong>E</strong> = Sempre/Concordo totalmente</li>
                 </ul>
               </div>
-              
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={handleBack}>
-                  Voltar
-                </Button>
-                <Button onClick={handleStart}>
-                  Iniciar Questionário <ChevronRight className="ml-2" />
-                </Button>
-              </div>
-            </CardContent>
+            </div>
           </Card>
+              
+          <div className="flex justify-between">
+            <Button variant="outline" onClick={handleBack}>
+              Voltar
+            </Button>
+            <Button onClick={handleStart} className="flex items-center gap-2">
+              Iniciar Questionário <ChevronRight className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </div>
     </Layout>
