@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -84,7 +83,7 @@ const burnoutQuestions: BurnoutQuestion[] = [
   {
     id: 6,
     section: "PARTE 2: EXAUSTÃO EMOCIONAL",
-    text: "Tenho dificuldade em "desligar" do trabalho durante meu tempo livre.",
+    text: 'Tenho dificuldade em "desligar" do trabalho durante meu tempo livre.',
     type: "choice",
     options: ["A", "B", "C", "D", "E"],
     answer: null
