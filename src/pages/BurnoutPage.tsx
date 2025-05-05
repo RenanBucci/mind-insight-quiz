@@ -6,7 +6,10 @@ import QuestionCard from '@/components/quiz/QuestionCard';
 import QuizProgress from '@/components/quiz/QuizProgress';
 import { useAuthStore } from '@/store/authStore';
 import { useBurnoutStore } from '@/store/burnoutStore';
+import { useMissionStore } from '@/store/missionStore';
 import { toast } from 'sonner';
+import { Card } from '@/components/ui/card';
+import { Activity, BadgeCheck, Clock } from 'lucide-react';
 
 const BurnoutPage = () => {
   const navigate = useNavigate();
@@ -18,6 +21,8 @@ const BurnoutPage = () => {
     getAnsweredCount, 
     markBurnoutCompleted
   } = useBurnoutStore();
+  
+  const { setMissionProgress, completeMission } = useMissionStore();
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const currentQuestion = questions[currentQuestionIndex];
@@ -32,8 +37,12 @@ const BurnoutPage = () => {
         duration: 3000,
       });
       navigate('/register');
+      return;
     }
-  }, [isAuthenticated, navigate]);
+    
+    // Update mission progress
+    setMissionProgress('start-burnout', 1);
+  }, [isAuthenticated, navigate, setMissionProgress]);
   
   const handleAnswer = (answer: string) => {
     setAnswer(currentQuestion.id, answer);
@@ -69,6 +78,11 @@ const BurnoutPage = () => {
     }
     
     markBurnoutCompleted();
+    
+    // Update missions
+    completeMission('start-burnout');
+    completeMission('complete-burnout');
+    setMissionProgress('complete-all-tests', 1);
     
     try {
       // Send burnout data to webhook
@@ -118,36 +132,69 @@ const BurnoutPage = () => {
     ['C', 'D', 'E'].includes(currentQuestion.answer || '')
   );
 
+  const progress = Math.round((answeredCount / questions.length) * 100);
+
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        {currentQuestionIndex === 0 && (
-          <h1 className="text-2xl md:text-3xl font-bold mb-8 text-center">
-            TESTE DE BURNOUT PROFISSIONAL
-          </h1>
-        )}
-        
-        <QuizProgress answered={answeredCount} total={questions.length} />
-        
-        <QuestionCard
-          questionId={currentQuestion.id}
-          questionText={currentQuestion.text}
-          sectionTitle={sectionTitle}
-          options={currentQuestion.options}
-          answer={currentQuestion.answer}
-          onAnswer={handleAnswer}
-          onNext={handleNextQuestion}
-          onPrev={handlePrevQuestion}
-          isFirstQuestion={isFirstQuestion}
-          isLastQuestion={isLastQuestion}
-          showSubQuestion={showSubQuestion}
-          subQuestionText={currentQuestion.subQuestion?.text}
-          subAnswer={currentQuestion.subQuestion?.answer}
-          onSubAnswer={handleSubAnswer}
-        />
-        
-        <div className="text-center text-sm text-text-secondary mt-4">
-          Pergunta {currentQuestionIndex + 1} de {questions.length}
+      <div 
+        className="min-h-screen py-12 px-4"
+        style={{
+          backgroundImage: 'linear-gradient(180deg, rgba(241,245,249,1) 0%, rgba(255,255,255,1) 100%)'
+        }}
+      >
+        <div className="container mx-auto">
+          {currentQuestionIndex === 0 && (
+            <div className="max-w-3xl mx-auto mb-12">
+              <Card className="p-6 border-0 shadow-lg rounded-xl bg-gradient-to-br from-orange-50 to-white mb-8">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-full bg-orange-100 text-orange-600">
+                    <Activity className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h1 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900">
+                      TESTE DE BURNOUT PROFISSIONAL
+                    </h1>
+                    <p className="text-gray-700 mb-4">
+                      Este teste avalia seu nível de esgotamento profissional através 
+                      de questões que abordam diferentes aspectos do seu bem-estar no trabalho.
+                    </p>
+                    <div className="flex items-center gap-3 text-sm text-gray-600 mt-4 pt-4 border-t border-gray-100">
+                      <div className="flex items-center gap-1">
+                        <BadgeCheck className="h-4 w-4 text-green-500" />
+                        <span>{questions.length} questões</span>
+                      </div>
+                      <div className="w-1 h-1 rounded-full bg-gray-300"></div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4 text-orange-500" />
+                        <span>Aprox. 10-15 minutos</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
+          
+          <QuizProgress answered={answeredCount} total={questions.length} />
+          
+          <QuestionCard
+            questionId={currentQuestion.id}
+            questionText={currentQuestion.text}
+            sectionTitle={sectionTitle}
+            options={currentQuestion.options}
+            answer={currentQuestion.answer}
+            onAnswer={handleAnswer}
+            onNext={handleNextQuestion}
+            onPrev={handlePrevQuestion}
+            isFirstQuestion={isFirstQuestion}
+            isLastQuestion={isLastQuestion}
+            showSubQuestion={showSubQuestion}
+            subQuestionText={currentQuestion.subQuestion?.text}
+            subAnswer={currentQuestion.subQuestion?.answer}
+            onSubAnswer={handleSubAnswer}
+            currentQuestionNumber={currentQuestionIndex + 1}
+            totalQuestions={questions.length}
+          />
         </div>
       </div>
     </Layout>

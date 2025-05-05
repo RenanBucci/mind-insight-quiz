@@ -6,7 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 interface QuestionCardProps {
   questionId: number;
@@ -58,25 +63,60 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
   return (
     <div className="w-full max-w-3xl mx-auto">
-      <div className="mb-4 text-center">
-        <h1 className="text-2xl font-bold text-center mb-2">{sectionTitle}</h1>
+      <div className="mb-6 text-center">
+        <h1 className="text-2xl md:text-3xl font-bold text-center mb-3 bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">
+          {sectionTitle}
+        </h1>
         <p className="text-sm text-gray-500">Questão {currentQuestionNumber} de {totalQuestions}</p>
         
-        <div className="w-full bg-gray-200 h-2 rounded-full mt-4">
+        <div className="w-full bg-gray-200 h-1.5 rounded-full mt-4">
           <div 
-            className="bg-blue-500 h-2 rounded-full" 
+            className="bg-gradient-to-r from-blue-500 to-indigo-500 h-1.5 rounded-full transition-all duration-500 ease-out" 
             style={{ width: `${(currentQuestionNumber / totalQuestions) * 100}%` }}
           />
         </div>
       </div>
       
-      <Card className="p-8 mb-8 shadow-md">
-        <div className="flex items-start gap-6">
-          <div className="text-7xl font-bold text-blue-400 leading-none">
+      <Card className="p-6 md:p-8 mb-8 shadow-lg rounded-xl border-0 overflow-hidden relative bg-gradient-to-br from-white to-blue-50">
+        <div className="flex flex-col md:flex-row items-start gap-6">
+          <div className="hidden md:block text-7xl font-bold text-indigo-200 leading-none">
             {questionId}
           </div>
           <div className="flex-1">
-            <p className="text-xl mb-6">{questionText}</p>
+            <div className="flex items-start gap-2 mb-6">
+              <div className="md:hidden flex-shrink-0 text-4xl font-bold text-indigo-400 leading-none mr-2">
+                {questionId}
+              </div>
+              <div>
+                <p className="text-lg md:text-xl text-gray-800 font-medium">{questionText}</p>
+                
+                {questionType === 'choice' && (
+                  <div className="mt-2">
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <button className="text-xs text-blue-500 hover:text-blue-700 flex items-center gap-1">
+                          <HelpCircle className="h-3 w-3" />
+                          <span>Ver explicação das opções</span>
+                        </button>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-80">
+                        <div className="space-y-2 p-2">
+                          <h4 className="text-sm font-medium">Significado das opções:</h4>
+                          <ul className="space-y-1 text-sm">
+                            {Object.entries(optionLabels).map(([key, value]) => (
+                              <li key={key} className="flex items-start gap-2">
+                                <span className="font-bold">{key}:</span> 
+                                <span className="text-gray-600">{value}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
+                )}
+              </div>
+            </div>
             
             {questionType === 'choice' ? (
               <RadioGroup 
@@ -85,10 +125,20 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                 className="space-y-3"
               >
                 {options.map((option) => (
-                  <div key={option} className="flex items-center gap-2">
-                    <RadioGroupItem value={option} id={`option-${option}`} />
-                    <Label htmlFor={`option-${option}`} className="cursor-pointer text-lg">
-                      {option} - {optionLabels[option as keyof typeof optionLabels] || option}
+                  <div 
+                    key={option} 
+                    className="flex items-center gap-2 p-3 rounded-lg hover:bg-blue-50/50 transition-colors cursor-pointer border border-transparent hover:border-blue-200"
+                  >
+                    <RadioGroupItem 
+                      value={option} 
+                      id={`option-${option}`} 
+                      className="text-blue-600"
+                    />
+                    <Label 
+                      htmlFor={`option-${option}`} 
+                      className="cursor-pointer text-lg flex-1"
+                    >
+                      <span className="font-medium">{option}</span> - {optionLabels[option as keyof typeof optionLabels] || option}
                     </Label>
                   </div>
                 ))}
@@ -99,7 +149,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                   value={answer || ""}
                   onChange={(e) => onAnswer(e.target.value)}
                   placeholder="Digite sua resposta aqui..."
-                  className="w-full min-h-[120px]"
+                  className="w-full min-h-[150px] bg-white/70 border-blue-100 focus-visible:ring-blue-400"
                 />
               ) : (
                 <Input
@@ -107,20 +157,20 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                   value={answer || ""}
                   onChange={(e) => onAnswer(e.target.value)}
                   placeholder="Digite sua resposta aqui..."
-                  className="w-full"
+                  className="w-full bg-white/70 border-blue-100 focus-visible:ring-blue-400"
                 />
               )
             )}
             
             {showSubQuestion && (
-              <div className="mt-6 pt-4 border-t border-gray-200">
-                <p className="text-lg italic mb-3">{subQuestionText}</p>
+              <div className="mt-8 pt-5 border-t border-blue-100">
+                <p className="text-base italic mb-3 text-gray-700">{subQuestionText}</p>
                 <Input
                   type="text"
                   value={subAnswer || ""}
                   onChange={(e) => onSubAnswer(e.target.value)}
                   placeholder="Digite sua resposta aqui..."
-                  className="w-full"
+                  className="w-full bg-white/70 border-blue-100 focus-visible:ring-blue-400"
                 />
               </div>
             )}
@@ -128,24 +178,24 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         </div>
       </Card>
       
-      <div className="flex justify-between mt-6">
+      <div className="flex justify-between mt-8">
         <Button 
           onClick={onPrev}
-          variant="secondary" 
+          variant="outline" 
           size="lg"
-          className="px-8 py-6 text-lg"
+          className="px-6 py-6 text-base flex items-center gap-2 transition-all hover:translate-x-[-2px]"
           disabled={isFirstQuestion}
         >
-          <ChevronLeft className="mr-2" /> Anterior
+          <ChevronLeft className="mr-1" /> Anterior
         </Button>
         
         <Button 
           onClick={onNext}
           disabled={!answer} 
           size="lg"
-          className="px-8 py-6 text-lg"
+          className="px-6 py-6 text-base gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 border-0 hover:from-blue-700 hover:to-indigo-700 transition-all hover:translate-x-[2px]"
         >
-          {isLastQuestion ? 'Finalizar' : 'Próxima'} <ChevronRight className="ml-2" />
+          {isLastQuestion ? 'Finalizar' : 'Próxima'} <ChevronRight className="ml-1" />
         </Button>
       </div>
     </div>
